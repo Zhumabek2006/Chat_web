@@ -1,0 +1,9 @@
+﻿fastapi
+uvicorn
+firebase-admin
+python-dotenv
+websockets
+pydantic
+passlib[bcrypt]
+bcrypt<4.0.0
+python-multipart
