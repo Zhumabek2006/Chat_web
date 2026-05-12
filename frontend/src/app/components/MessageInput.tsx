@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Send, Smile } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Send, Smile, ImagePlus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { messageService } from '../services/api';
+import { toast } from 'sonner';
 
 interface MessageInputProps {
-  onSend: (content: string) => void;
+  onSend: (content: string, imageUrl?: string) => void;
   disabled?: boolean;
 }
 
@@ -12,13 +14,32 @@ const EMOJIS = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '✨', '💯',
 export function MessageInput({ onSend, disabled }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const canSend = message.trim().length > 0 && !disabled;
+  const canSend = (message.trim().length > 0 || imagePreview !== null) && !disabled && !uploading;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!canSend) return;
-    onSend(message.trim());
+    let imageUrl: string | undefined;
+    if (imageFile) {
+      try {
+        setUploading(true);
+        imageUrl = await messageService.uploadImage(imageFile);
+      } catch {
+        toast.error('Image upload failed');
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+    onSend(message.trim(), imageUrl);
     setMessage('');
+    setImagePreview(null);
+    setImageFile(null);
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -28,15 +49,63 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image too large — max 5 MB');
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const clearImage = () => {
+    setImagePreview(null);
+    setImageFile(null);
+  };
+
   return (
     <div
-      className="relative px-4 py-4 flex-shrink-0"
+      className="px-3 md:px-4 py-3 flex-shrink-0"
       style={{
         background: 'var(--sp-base)',
         borderTop: '1px solid #282828',
         fontFamily: 'var(--sp-font)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
       }}
     >
+      {/* Image preview strip */}
+      <AnimatePresence>
+        {imagePreview && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2 }}
+            className="mb-2 relative inline-block"
+          >
+            <img
+              src={imagePreview}
+              alt="preview"
+              className="rounded-xl object-cover"
+              style={{ maxHeight: 120, maxWidth: 200, border: '2px solid var(--sp-green)' }}
+            />
+            <button
+              onClick={clearImage}
+              className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--sp-error)', color: '#fff' }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Emoji picker */}
       <AnimatePresence>
         {showEmoji && (
@@ -70,7 +139,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-3">
+      <div className="relative flex items-center gap-2">
         {/* Emoji button */}
         <motion.button
           id="emoji-btn"
@@ -79,13 +148,37 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           style={{
             background: showEmoji ? 'var(--sp-elevated)' : 'transparent',
             color: showEmoji ? 'var(--sp-text)' : 'var(--sp-text-muted)',
-            border: '1px solid transparent',
           }}
           whileHover={{ background: 'var(--sp-elevated)', color: 'var(--sp-text)' }}
           whileTap={{ scale: 0.92 }}
+          disabled={disabled}
         >
           <Smile className="w-5 h-5" />
         </motion.button>
+
+        {/* Image upload button */}
+        <motion.button
+          id="image-upload-btn"
+          onClick={() => fileRef.current?.click()}
+          className="p-2 rounded-full flex-shrink-0"
+          style={{
+            background: imagePreview ? 'var(--sp-elevated)' : 'transparent',
+            color: imagePreview ? 'var(--sp-green)' : 'var(--sp-text-muted)',
+          }}
+          whileHover={{ background: 'var(--sp-elevated)', color: 'var(--sp-green)' }}
+          whileTap={{ scale: 0.92 }}
+          disabled={disabled}
+          title="Attach image"
+        >
+          <ImagePlus className="w-5 h-5" />
+        </motion.button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
 
         {/* Text input */}
         <div className="relative flex-1">
@@ -95,10 +188,10 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Write a message…"
+            placeholder={disabled ? 'Select a chat to message…' : 'Write a message…'}
             disabled={disabled}
             autoComplete="off"
-            className="w-full py-3 px-5 text-sm rounded-full disabled:opacity-40"
+            className="w-full py-2.5 px-4 text-sm rounded-full disabled:opacity-40"
             style={{
               background: 'var(--sp-elevated)',
               color: 'var(--sp-text)',
@@ -123,7 +216,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           id="send-btn"
           onClick={handleSend}
           disabled={!canSend}
-          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background: canSend ? 'var(--sp-green)' : 'var(--sp-elevated)',
             color: canSend ? '#000' : 'var(--sp-border)',
@@ -134,7 +227,11 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           whileHover={canSend ? { scale: 1.08 } : {}}
           whileTap={canSend ? { scale: 0.92 } : {}}
         >
-          <Send className="w-4 h-4" />
+          {uploading ? (
+            <span className="sp-spinner" style={{ width: 16, height: 16 }} />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
         </motion.button>
       </div>
     </div>

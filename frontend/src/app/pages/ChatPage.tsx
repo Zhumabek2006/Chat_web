@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { Sidebar } from '../components/Sidebar';
 import { ChatWindow } from '../components/ChatWindow';
@@ -18,8 +18,9 @@ export function ChatPage({ currentUser, onLogout, theme, onToggleTheme }: ChatPa
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  // 'list' shows sidebar full-screen on mobile; 'chat' shows chat panel full-screen
+  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
-  // Keep handler up-to-date without re-registering on every render
   const selectedUserRef = useRef<User | null>(null);
   selectedUserRef.current = selectedUser;
 
@@ -75,6 +76,8 @@ export function ChatPage({ currentUser, onLogout, theme, onToggleTheme }: ChatPa
   const handleSelectUser = async (user: User) => {
     setSelectedUser(user);
     setMessages([]);
+    // On mobile: switch to chat panel
+    setMobileView('chat');
     if (!currentUser.id || !user.id) return;
     try {
       const convId = [currentUser.id, user.id].sort().join('_');
@@ -84,13 +87,15 @@ export function ChatPage({ currentUser, onLogout, theme, onToggleTheme }: ChatPa
     }
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, imageUrl?: string) => {
     if (!selectedUser || !currentUser.id) return;
+    if (!content.trim() && !imageUrl) return;
     try {
       const msg = await messageService.sendMessage({
         sender_id: currentUser.id,
         receiver_id: selectedUser.id!,
         content,
+        image_url: imageUrl || null,
       });
       setMessages((prev) => {
         if (prev.some((m) => m.id === msg.id)) return prev;
@@ -131,6 +136,10 @@ export function ChatPage({ currentUser, onLogout, theme, onToggleTheme }: ChatPa
     }
   };
 
+  const handleBack = () => {
+    setMobileView('list');
+  };
+
   return (
     <motion.div
       className="flex h-full overflow-hidden"
@@ -139,29 +148,75 @@ export function ChatPage({ currentUser, onLogout, theme, onToggleTheme }: ChatPa
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
     >
-      {/* Resizable sidebar */}
-      <ResizableSidebar defaultWidth={280} minWidth={200} maxWidth={480}>
-        <Sidebar
+      {/* ── DESKTOP LAYOUT (md+): side-by-side with resizable sidebar ── */}
+      <div className="hidden md:flex h-full w-full overflow-hidden">
+        <ResizableSidebar defaultWidth={280} minWidth={200} maxWidth={480}>
+          <Sidebar
+            currentUser={currentUser}
+            users={users}
+            selectedUser={selectedUser}
+            onSelectUser={handleSelectUser}
+            onLogout={onLogout}
+            theme={theme}
+            onToggleTheme={onToggleTheme}
+          />
+        </ResizableSidebar>
+        <ChatWindow
           currentUser={currentUser}
-          users={users}
           selectedUser={selectedUser}
-          onSelectUser={handleSelectUser}
-          onLogout={onLogout}
-          theme={theme}
-          onToggleTheme={onToggleTheme}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          onEditMessage={handleEditMessage}
+          onDeleteMessage={handleDeleteMessage}
+          isTyping={isTyping}
         />
-      </ResizableSidebar>
+      </div>
 
-      {/* Chat area */}
-      <ChatWindow
-        currentUser={currentUser}
-        selectedUser={selectedUser}
-        messages={messages}
-        onSendMessage={handleSendMessage}
-        onEditMessage={handleEditMessage}
-        onDeleteMessage={handleDeleteMessage}
-        isTyping={isTyping}
-      />
+      {/* ── MOBILE LAYOUT (<md): single panel, animated slide ── */}
+      <div className="flex md:hidden h-full w-full overflow-hidden relative">
+        <AnimatePresence initial={false} mode="wait">
+          {mobileView === 'list' ? (
+            <motion.div
+              key="sidebar"
+              className="absolute inset-0"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 38 }}
+            >
+              <Sidebar
+                currentUser={currentUser}
+                users={users}
+                selectedUser={selectedUser}
+                onSelectUser={handleSelectUser}
+                onLogout={onLogout}
+                theme={theme}
+                onToggleTheme={onToggleTheme}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="chat"
+              className="absolute inset-0"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 38 }}
+            >
+              <ChatWindow
+                currentUser={currentUser}
+                selectedUser={selectedUser}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
+                isTyping={isTyping}
+                onBack={handleBack}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }

@@ -24,8 +24,9 @@ class StatusUpdate(BaseModel):
 class MessageCreate(BaseModel):
     sender_id: str
     receiver_id: str
-    content: str
-    
+    content: str = ""
+    image_url: Optional[str] = None
+
 class MessageUpdate(BaseModel):
     content: str
 
@@ -34,6 +35,7 @@ class MessageResponse(BaseModel):
     sender_id: str
     receiver_id: str
     content: str
+    image_url: Optional[str] = None
     timestamp: datetime
     edited: bool
     deleted: bool

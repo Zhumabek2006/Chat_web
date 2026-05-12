@@ -38,7 +38,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-[100dvh] flex items-center justify-center p-4"
       style={{ background: 'var(--sp-base)' }}
     >
       {/* Subtle radial gradient backdrop */}

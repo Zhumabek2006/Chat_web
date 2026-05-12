@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Menu, X, LogOut } from 'lucide-react';
+import { MessageSquare, LogOut } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { UserCard } from './UserCard';
 import { ThemeToggle } from './ThemeToggle';
@@ -26,7 +26,6 @@ export function Sidebar({
   onToggleTheme,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const filteredUsers = users.filter(
     (u) =>
@@ -36,14 +35,14 @@ export function Sidebar({
 
   const initials = (name: string) => name.slice(0, 2).toUpperCase();
 
-  const content = (
+  return (
     <div
-      className="h-full flex flex-col"
+      className="h-full flex flex-col w-full"
       style={{ background: 'var(--sp-base)', fontFamily: 'var(--sp-font)' }}
     >
       {/* ── Brand header ── */}
       <div
-        className="flex items-center gap-3 px-6 py-5 flex-shrink-0"
+        className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
         style={{ borderBottom: '1px solid #282828' }}
       >
         <div
@@ -58,13 +57,6 @@ export function Sidebar({
         >
           VibeChat
         </span>
-        <button
-          onClick={() => setIsMobileOpen(false)}
-          className="md:hidden ml-auto p-1"
-          style={{ color: 'var(--sp-text-muted)' }}
-        >
-          <X className="w-5 h-5" />
-        </button>
       </div>
 
       {/* ── Search ── */}
@@ -87,7 +79,10 @@ export function Sidebar({
 
         {filteredUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
-            <MessageSquare className="w-8 h-8 opacity-20" style={{ color: 'var(--sp-text-muted)' }} />
+            <MessageSquare
+              className="w-8 h-8 opacity-20"
+              style={{ color: 'var(--sp-text-muted)' }}
+            />
             <p className="text-sm" style={{ color: 'var(--sp-text-dim)' }}>
               No users found
             </p>
@@ -104,10 +99,7 @@ export function Sidebar({
                 <UserCard
                   user={user}
                   isActive={selectedUser?.id === user.id}
-                  onClick={() => {
-                    onSelectUser(user);
-                    setIsMobileOpen(false);
-                  }}
+                  onClick={() => onSelectUser(user)}
                   lastMessage="Click to start chatting"
                 />
               </motion.div>
@@ -119,7 +111,10 @@ export function Sidebar({
       {/* ── Footer ── */}
       <div
         className="px-4 py-4 flex-shrink-0 flex flex-col gap-3"
-        style={{ borderTop: '1px solid #282828' }}
+        style={{
+          borderTop: '1px solid #282828',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+        }}
       >
         {/* Current user row */}
         {currentUser && (
@@ -165,47 +160,5 @@ export function Sidebar({
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <>
-      {/* Mobile hamburger */}
-      <button
-        id="mobile-menu-btn"
-        onClick={() => setIsMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-full"
-        style={{ background: 'var(--sp-green)', color: '#000' }}
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Desktop sidebar — width controlled by ResizableSidebar in ChatPage */}
-      <div className="hidden md:block h-full w-full overflow-hidden">{content}</div>
-
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            className="md:hidden fixed inset-0 z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ background: 'rgba(0,0,0,0.7)' }}
-            onClick={() => setIsMobileOpen(false)}
-          >
-            <motion.div
-              className="w-72 h-full"
-              initial={{ x: -288 }}
-              animate={{ x: 0 }}
-              exit={{ x: -288 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {content}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
   );
 }

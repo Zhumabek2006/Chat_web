@@ -1,8 +1,10 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from typing import List
 import crud
+import base64
+import uuid
 from schemas import UserCreate, UserResponse, UserLogin, MessageCreate, MessageResponse, MessageUpdate, StatusUpdate
 from websocket_manager import manager
 import json
@@ -42,6 +44,21 @@ def update_status(id: str, status: StatusUpdate):
         return crud.update_user_status(id, status.online)
     except Exception as e:
         raise HTTPException(status_code=404, detail="User not found")
+
+# --- Image Upload ---
+
+@app.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    """Accept an image, return a base64 data-URL so no external storage needed."""
+    allowed = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail="Unsupported image type")
+    if file.size and file.size > 5 * 1024 * 1024:  # 5 MB guard
+        raise HTTPException(status_code=400, detail="Image too large (max 5 MB)")
+    data = await file.read()
+    b64 = base64.b64encode(data).decode()
+    data_url = f"data:{file.content_type};base64,{b64}"
+    return {"url": data_url}
 
 # --- Messages ---
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, MoreVertical } from 'lucide-react';
+import { MessageCircle, MoreVertical, ArrowLeft } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
@@ -10,10 +10,12 @@ interface ChatWindowProps {
   currentUser: User | null;
   selectedUser: User | null;
   messages: Message[];
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, imageUrl?: string) => void;
   onEditMessage: (message: Message) => void;
   onDeleteMessage: (messageId: string) => void;
   isTyping?: boolean;
+  /** Mobile only: called when the back arrow is pressed */
+  onBack?: () => void;
 }
 
 export function ChatWindow({
@@ -24,6 +26,7 @@ export function ChatWindow({
   onEditMessage,
   onDeleteMessage,
   isTyping,
+  onBack,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,10 +39,9 @@ export function ChatWindow({
   if (!selectedUser) {
     return (
       <div
-        className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0"
+        className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0 h-full"
         style={{ background: 'var(--sp-base)', fontFamily: 'var(--sp-font)' }}
       >
-        {/* Animated logo circle */}
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{
@@ -54,7 +56,7 @@ export function ChatWindow({
           <MessageCircle className="w-10 h-10" style={{ color: 'var(--sp-green)' }} />
         </motion.div>
 
-        <div className="text-center">
+        <div className="text-center px-8">
           <h2
             className="text-2xl font-bold mb-2 tracking-tight"
             style={{ color: 'var(--sp-text)' }}
@@ -66,7 +68,6 @@ export function ChatWindow({
           </p>
         </div>
 
-        {/* Decorative pill tags */}
         <div className="flex gap-2 flex-wrap justify-center">
           {['Real-time', 'Fast', 'Simple'].map((tag) => (
             <span
@@ -92,19 +93,35 @@ export function ChatWindow({
 
   return (
     <div
-      className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
-      style={{ background: 'var(--sp-base)', fontFamily: 'var(--sp-font)' }}
+      className="flex flex-col min-w-0 h-full overflow-hidden"
+      style={{ background: 'var(--sp-base)', fontFamily: 'var(--sp-font)', flex: 1 }}
     >
       {/* ── Chat header ── */}
       <motion.div
-        className="flex items-center justify-between px-5 py-3 flex-shrink-0"
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
         style={{ borderBottom: '1px solid #282828', background: 'var(--sp-surface)' }}
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        {/* Left: avatar + name */}
-        <div className="flex items-center gap-3">
+        {/* Left: back button (mobile only) + avatar + name */}
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Back arrow — visible only on mobile */}
+          {onBack && (
+            <motion.button
+              id="chat-back-btn"
+              onClick={onBack}
+              className="md:hidden flex-shrink-0 p-1.5 rounded-full"
+              style={{ color: 'var(--sp-text-muted)', background: 'transparent' }}
+              whileHover={{ background: 'var(--sp-elevated)', color: 'var(--sp-text)' }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Back to contacts"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </motion.button>
+          )}
+
+          {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
@@ -123,8 +140,10 @@ export function ChatWindow({
               />
             )}
           </div>
-          <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--sp-text)' }}>
+
+          {/* Name + status */}
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold truncate" style={{ color: 'var(--sp-text)' }}>
               {selectedUser.username}
             </h3>
             <p
@@ -137,7 +156,7 @@ export function ChatWindow({
         </div>
 
         {/* Right: more menu */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <motion.button
             id="chat-more-btn"
             onClick={() => setMenuOpen((p) => !p)}
@@ -198,7 +217,7 @@ export function ChatWindow({
       </motion.div>
 
       {/* ── Messages area ── */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-2">
         <AnimatePresence initial={false}>
           {messages.map((msg) => (
             <MessageBubble
@@ -215,7 +234,7 @@ export function ChatWindow({
       </div>
 
       {/* ── Input bar ── */}
-      <MessageInput onSend={onSendMessage} disabled={!currentUser} />
+      <MessageInput onSend={(content, imageUrl) => onSendMessage(content, imageUrl)} disabled={!currentUser} />
     </div>
   );
 }
