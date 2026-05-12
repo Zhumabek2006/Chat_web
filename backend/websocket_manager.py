@@ -8,6 +8,13 @@ class ConnectionManager:
 
     async def connect(self, user_id: str, websocket: WebSocket):
         await websocket.accept()
+        # Close any stale connection for this user before registering the new one
+        old_ws = self.active_connections.get(user_id)
+        if old_ws is not None:
+            try:
+                await old_ws.close()
+            except Exception:
+                pass  # already closed, ignore
         self.active_connections[user_id] = websocket
 
     def disconnect(self, user_id: str):

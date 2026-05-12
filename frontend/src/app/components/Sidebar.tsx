@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import { MessageSquare, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { MessageSquare, Menu, X, LogOut } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { UserCard } from './UserCard';
 import { ThemeToggle } from './ThemeToggle';
@@ -29,141 +29,183 @@ export function Sidebar({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const filteredUsers = users.filter(
-    (user) =>
-      user.id !== currentUser?.id &&
-      user.username.toLowerCase().includes(searchQuery.toLowerCase())
+    (u) =>
+      u.id !== currentUser?.id &&
+      u.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getInitials = (username: string) => {
-    return username.slice(0, 2).toUpperCase();
-  };
+  const initials = (name: string) => name.slice(0, 2).toUpperCase();
 
-  const sidebarContent = (
-    <div className="h-full flex flex-col bg-[#16213e] border-r border-white/10">
-      <motion.div
-        className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+  const content = (
+    <div
+      className="h-full flex flex-col"
+      style={{ background: 'var(--sp-base)', fontFamily: 'var(--sp-font)' }}
+    >
+      {/* ── Brand header ── */}
+      <div
+        className="flex items-center gap-3 px-6 py-5 flex-shrink-0"
+        style={{ borderBottom: '1px solid #282828' }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <MessageSquare className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-white">VibeChat</h1>
-          </div>
-          <button
-            onClick={() => setIsMobileOpen(false)}
-            className="md:hidden text-white p-1"
-          >
-            <X className="w-6 h-6" />
-          </button>
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--sp-green)' }}
+        >
+          <MessageSquare className="w-5 h-5" style={{ color: '#000' }} />
         </div>
+        <span
+          className="text-xl font-bold tracking-tight"
+          style={{ color: 'var(--sp-text)' }}
+        >
+          VibeChat
+        </span>
+        <button
+          onClick={() => setIsMobileOpen(false)}
+          className="md:hidden ml-auto p-1"
+          style={{ color: 'var(--sp-text-muted)' }}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* ── Search ── */}
+      <div className="px-3 py-3 flex-shrink-0">
         <SearchBar
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search users..."
+          placeholder="Search conversations…"
         />
-      </motion.div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className="text-xs font-semibold text-gray-400 uppercase mb-3 px-2">
-            Conversations ({filteredUsers.length})
-          </h3>
-          {filteredUsers.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 text-sm">No users found</p>
-            </div>
-          ) : (
-            filteredUsers.map((user) => (
-              <UserCard
-                key={user.id}
-                user={user}
-                isActive={selectedUser?.id === user.id}
-                onClick={() => {
-                  onSelectUser(user);
-                  setIsMobileOpen(false);
-                }}
-                lastMessage="Click to start chatting"
-              />
-            ))
-          )}
-        </motion.div>
       </div>
 
-      <motion.div
-        className="p-4 bg-white/5 backdrop-blur-sm border-t border-white/10"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      {/* ── User list ── */}
+      <div className="flex-1 overflow-y-auto px-1 pb-2">
+        <p
+          className="px-4 pt-2 pb-1 text-xs font-bold uppercase"
+          style={{ color: 'var(--sp-text-muted)', letterSpacing: '1.5px' }}
+        >
+          Direct Messages
+        </p>
+
+        {filteredUsers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <MessageSquare className="w-8 h-8 opacity-20" style={{ color: 'var(--sp-text-muted)' }} />
+            <p className="text-sm" style={{ color: 'var(--sp-text-dim)' }}>
+              No users found
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence initial={false}>
+            {filteredUsers.map((user, i) => (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.2 }}
+              >
+                <UserCard
+                  user={user}
+                  isActive={selectedUser?.id === user.id}
+                  onClick={() => {
+                    onSelectUser(user);
+                    setIsMobileOpen(false);
+                  }}
+                  lastMessage="Click to start chatting"
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* ── Footer ── */}
+      <div
+        className="px-4 py-4 flex-shrink-0 flex flex-col gap-3"
+        style={{ borderTop: '1px solid #282828' }}
       >
+        {/* Current user row */}
         {currentUser && (
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {getInitials(currentUser.username)}
-                </span>
-              </div>
-              <div>
-                <p className="font-medium text-white text-sm">{currentUser.username}</p>
-                <p className="text-xs text-green-400">Online</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+              style={{ background: 'var(--sp-green)', color: '#000' }}
+            >
+              {initials(currentUser.username)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate" style={{ color: 'var(--sp-text)' }}>
+                {currentUser.username}
+              </p>
+              <p className="text-xs flex items-center gap-1" style={{ color: 'var(--sp-green)' }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-current" />
+                Online
+              </p>
             </div>
           </div>
         )}
-        <div className="flex items-center justify-between">
+
+        {/* Controls row */}
+        <div className="flex items-center justify-between gap-2">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <motion.button
+            id="logout-btn"
             onClick={onLogout}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors text-sm"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase"
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--sp-border)',
+              color: 'var(--sp-error)',
+              letterSpacing: '1px',
+              fontFamily: 'var(--sp-font)',
+            }}
+            whileHover={{ borderColor: 'var(--sp-error)', background: 'rgba(243,114,127,0.08)' }}
+            whileTap={{ scale: 0.96 }}
           >
+            <LogOut className="w-3.5 h-3.5" />
             Logout
           </motion.button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 
   return (
     <>
+      {/* Mobile hamburger */}
       <button
+        id="mobile-menu-btn"
         onClick={() => setIsMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 rounded-lg text-white"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-full"
+        style={{ background: 'var(--sp-green)', color: '#000' }}
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="w-5 h-5" />
       </button>
 
-      <div className="hidden md:block w-80 h-full">
-        {sidebarContent}
-      </div>
+      {/* Desktop sidebar — width controlled by ResizableSidebar in ChatPage */}
+      <div className="hidden md:block h-full w-full overflow-hidden">{content}</div>
 
-      {isMobileOpen && (
-        <motion.div
-          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setIsMobileOpen(false)}
-        >
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {isMobileOpen && (
           <motion.div
-            className="w-80 h-full"
-            initial={{ x: -320 }}
-            animate={{ x: 0 }}
-            exit={{ x: -320 }}
-            onClick={(e) => e.stopPropagation()}
+            className="md:hidden fixed inset-0 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ background: 'rgba(0,0,0,0.7)' }}
+            onClick={() => setIsMobileOpen(false)}
           >
-            {sidebarContent}
+            <motion.div
+              className="w-72 h-full"
+              initial={{ x: -288 }}
+              animate={{ x: 0 }}
+              exit={{ x: -288 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {content}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 from typing import List
 import crud
 from schemas import UserCreate, UserResponse, UserLogin, MessageCreate, MessageResponse, MessageUpdate, StatusUpdate
@@ -10,7 +11,7 @@ app = FastAPI(title="VibeChat API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,9 +27,6 @@ def register_user(user: UserCreate):
 def login_user(login_data: UserLogin):
     return crud.authenticate_user(login_data)
 
-@app.post("/users", response_model=UserResponse)
-def register_user(user: UserCreate):
-    return crud.create_user(user)
 
 @app.get("/users", response_model=List[UserResponse])
 def get_users():
@@ -49,26 +47,33 @@ def update_status(id: str, status: StatusUpdate):
 
 @app.post("/messages", response_model=MessageResponse)
 async def send_message(msg: MessageCreate):
-    msg_data = crud.create_message(msg)
-    
-    # Broadcast to receiver if online
-    ws_event = {
-        "type": "new_message",
-        "data": msg_data
-    }
-    await manager.send_personal_message(ws_event, msg.receiver_id)
-    # Also send to sender so multiple devices could sync, optional
-    await manager.send_personal_message(ws_event, msg.sender_id)
-    
-    return msg_data
+    try:
+        msg_data = crud.create_message(msg)
+        
+        # jsonable_encoder converts datetime -> ISO string so send_json doesn't crash
+        ws_event = {
+            "type": "new_message",
+            "data": jsonable_encoder(msg_data)
+        }
+        await manager.send_personal_message(ws_event, msg.receiver_id)
+        # Also send to sender so multiple devices could sync, optional
+        await manager.send_personal_message(ws_event, msg.sender_id)
+        
+        return msg_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send message: {str(e)}")
+
+# NOTE: /messages/search MUST be declared before /messages/{conversation_id}
+# otherwise FastAPI will capture "search" as a conversation_id path param
+@app.get("/messages/search", response_model=List[MessageResponse])
+def search_messages(q: str):
+    return crud.search_messages(q)
 
 @app.get("/messages/{conversation_id}", response_model=List[MessageResponse])
 def get_history(conversation_id: str):
     return crud.get_conversation_history(conversation_id)
-
-@app.get("/messages/search", response_model=List[MessageResponse])
-def search_messages(q: str):
-    return crud.search_messages(q)
 
 @app.put("/messages/{message_id}", response_model=MessageResponse)
 def update_message(message_id: str, msg_update: MessageUpdate):

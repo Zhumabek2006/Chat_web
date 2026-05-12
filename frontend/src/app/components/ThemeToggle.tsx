@@ -7,26 +7,38 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
+  const isDark = theme === 'dark';
+
   return (
     <motion.button
+      id="theme-toggle"
       onClick={onToggle}
-      className="relative w-14 h-7 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-1 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
+      style={{
+        background: 'var(--sp-elevated)',
+        color: 'var(--sp-text-muted)',
+        border: '1px solid var(--sp-border)',
+        fontFamily: 'var(--sp-font)',
+        letterSpacing: '1px',
+        textTransform: 'uppercase',
+      }}
+      whileHover={{ borderColor: 'var(--sp-border-lt)', color: 'var(--sp-text)' }}
+      whileTap={{ scale: 0.96 }}
     >
-      <motion.div
-        className="w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center"
-        animate={{
-          x: theme === 'dark' ? 24 : 0,
-        }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      <motion.span
+        key={theme}
+        initial={{ rotate: -30, opacity: 0 }}
+        animate={{ rotate: 0, opacity: 1 }}
+        transition={{ duration: 0.25 }}
       >
-        {theme === 'dark' ? (
-          <Moon className="w-3 h-3 text-indigo-600" />
+        {isDark ? (
+          <Moon className="w-3.5 h-3.5" />
         ) : (
-          <Sun className="w-3 h-3 text-yellow-500" />
+          <Sun className="w-3.5 h-3.5" style={{ color: '#ffa42b' }} />
         )}
-      </motion.div>
+      </motion.span>
+      <span>{isDark ? 'Dark' : 'Light'}</span>
     </motion.button>
   );
 }

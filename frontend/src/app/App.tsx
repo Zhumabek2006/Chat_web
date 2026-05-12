@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { AuthPage } from './pages/AuthPage';
 import { ChatPage } from './pages/ChatPage';
@@ -9,10 +8,7 @@ import { User } from './services/api';
 export default function App() {
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
   const { theme, toggleTheme } = useTheme();
-
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
+  // NOTE: do NOT force-add 'dark' here — useTheme already manages it
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -26,13 +22,15 @@ export default function App() {
     <div className="size-full">
       <Toaster
         position="top-right"
-        theme={theme}
+        theme="dark"
         richColors
         toastOptions={{
           style: {
-            background: theme === 'dark' ? '#1a1a2e' : '#ffffff',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: theme === 'dark' ? '#e5e7eb' : '#1a1a2e',
+            background: '#252525',
+            border: '1px solid #4d4d4d',
+            color: '#ffffff',
+            fontFamily: 'var(--sp-font)',
+            fontSize: '14px',
           },
         }}
       />

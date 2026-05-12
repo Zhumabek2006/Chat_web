@@ -7,90 +7,134 @@ interface MessageInputProps {
   disabled?: boolean;
 }
 
-const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '✨', '💯'];
+const EMOJIS = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '✨', '💯', '🙌', '😎', '🤝', '💬'];
 
 export function MessageInput({ onSend, disabled }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
 
+  const canSend = message.trim().length > 0 && !disabled;
+
   const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSend(message.trim());
-      setMessage('');
-    }
+    if (!canSend) return;
+    onSend(message.trim());
+    setMessage('');
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
-  const addEmoji = (emoji: string) => {
-    setMessage(prev => prev + emoji);
-    setShowEmoji(false);
-  };
-
   return (
-    <div className="relative p-4 bg-white/5 backdrop-blur-md border-t border-white/10">
+    <div
+      className="relative px-4 py-4 flex-shrink-0"
+      style={{
+        background: 'var(--sp-base)',
+        borderTop: '1px solid #282828',
+        fontFamily: 'var(--sp-font)',
+      }}
+    >
+      {/* Emoji picker */}
       <AnimatePresence>
         {showEmoji && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-20 left-4 bg-[#1a1a2e] border border-white/10 rounded-xl p-3 shadow-2xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full left-4 mb-2 p-3 grid grid-cols-6 gap-1 rounded-xl z-20"
+            style={{
+              background: 'var(--sp-card)',
+              boxShadow: 'var(--sp-shadow-heavy)',
+              border: '1px solid var(--sp-border)',
+            }}
           >
-            <div className="grid grid-cols-4 gap-2">
-              {emojis.map((emoji, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => addEmoji(emoji)}
-                  className="text-2xl hover:scale-125 transition-transform p-2 rounded-lg hover:bg-white/10"
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {emoji}
-                </motion.button>
-              ))}
-            </div>
+            {EMOJIS.map((emoji) => (
+              <motion.button
+                key={emoji}
+                onClick={() => {
+                  setMessage((p) => p + emoji);
+                  setShowEmoji(false);
+                }}
+                className="text-xl p-1.5 rounded-md"
+                whileHover={{ scale: 1.3, background: 'var(--sp-elevated)' }}
+                whileTap={{ scale: 0.9 }}
+              >
+                {emoji}
+              </motion.button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center gap-3">
+        {/* Emoji button */}
         <motion.button
-          onClick={() => setShowEmoji(!showEmoji)}
-          className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          id="emoji-btn"
+          onClick={() => setShowEmoji((p) => !p)}
+          className="p-2 rounded-full flex-shrink-0"
+          style={{
+            background: showEmoji ? 'var(--sp-elevated)' : 'transparent',
+            color: showEmoji ? 'var(--sp-text)' : 'var(--sp-text-muted)',
+            border: '1px solid transparent',
+          }}
+          whileHover={{ background: 'var(--sp-elevated)', color: 'var(--sp-text)' }}
+          whileTap={{ scale: 0.92 }}
         >
-          <Smile className="w-5 h-5 text-gray-400" />
+          <Smile className="w-5 h-5" />
         </motion.button>
 
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type a message..."
-          disabled={disabled}
-          className="flex-1 px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all duration-300"
-        />
+        {/* Text input */}
+        <div className="relative flex-1">
+          <input
+            id="message-input"
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Write a message…"
+            disabled={disabled}
+            autoComplete="off"
+            className="w-full py-3 px-5 text-sm rounded-full disabled:opacity-40"
+            style={{
+              background: 'var(--sp-elevated)',
+              color: 'var(--sp-text)',
+              border: 'none',
+              boxShadow: 'var(--sp-shadow-inset)',
+              fontFamily: 'var(--sp-font)',
+              outline: 'none',
+              transition: 'box-shadow 150ms ease',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow =
+                'rgb(18,18,18) 0px 1px 0px, rgb(255,255,255) 0px 0px 0px 1px inset';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = 'var(--sp-shadow-inset)';
+            }}
+          />
+        </div>
 
+        {/* Send button */}
         <motion.button
+          id="send-btn"
           onClick={handleSend}
-          disabled={!message.trim() || disabled}
-          className={`p-2.5 rounded-xl transition-all duration-300 ${
-            message.trim() && !disabled
-              ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg hover:shadow-indigo-500/50'
-              : 'bg-gray-700 opacity-50 cursor-not-allowed'
-          }`}
-          whileHover={message.trim() && !disabled ? { scale: 1.05 } : {}}
-          whileTap={message.trim() && !disabled ? { scale: 0.95 } : {}}
+          disabled={!canSend}
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            background: canSend ? 'var(--sp-green)' : 'var(--sp-elevated)',
+            color: canSend ? '#000' : 'var(--sp-border)',
+            border: 'none',
+            cursor: canSend ? 'pointer' : 'not-allowed',
+            transition: 'background 200ms ease',
+          }}
+          whileHover={canSend ? { scale: 1.08 } : {}}
+          whileTap={canSend ? { scale: 0.92 } : {}}
         >
-          <Send className="w-5 h-5 text-white" />
+          <Send className="w-4 h-4" />
         </motion.button>
       </div>
     </div>

@@ -70,8 +70,9 @@ export const messageService = {
     return response.data;
   },
 
-  deleteMessage: async (messageId: string): Promise<void> => {
-    await api.delete(`/messages/${messageId}`);
+  deleteMessage: async (messageId: string): Promise<Message> => {
+    const response = await api.delete(`/messages/${messageId}`);
+    return response.data;
   },
 
   editMessage: async (messageId: string, content: string): Promise<Message> => {
@@ -84,8 +85,17 @@ export class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private messageHandlers: ((message: any) => void)[] = [];
+  // Flag to prevent automatic reconnect after an intentional disconnect
+  private intentionalClose = false;
 
   connect(userId: string) {
+    // Avoid creating a duplicate socket if one is already open/connecting
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    this.intentionalClose = false;
+
     try {
       this.ws = new WebSocket(`ws://localhost:8000/ws/chat/${userId}`);
 
@@ -107,6 +117,8 @@ export class WebSocketService {
       };
 
       this.ws.onclose = () => {
+        // Do NOT reconnect if this was a deliberate close (e.g. logout / unmount)
+        if (this.intentionalClose) return;
         console.log('WebSocket disconnected, attempting to reconnect...');
         this.reconnectTimeout = setTimeout(() => {
           this.connect(userId);
@@ -118,8 +130,11 @@ export class WebSocketService {
   }
 
   disconnect() {
+    // Mark as intentional BEFORE closing so onclose won't schedule a reconnect
+    this.intentionalClose = true;
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
     }
     if (this.ws) {
       this.ws.close();

@@ -68,7 +68,9 @@ def update_user_status(user_id: str, online: bool):
         "online": online,
         "last_seen": datetime.now(timezone.utc)
     })
-    return doc_ref.get().to_dict()
+    user_dict = doc_ref.get().to_dict()
+    # Never expose the hashed password to the caller
+    return {k: v for k, v in user_dict.items() if k != "password"}
 
 def create_message(msg: MessageCreate):
     msgs_ref = db.collection('messages')
@@ -90,8 +92,10 @@ def create_message(msg: MessageCreate):
 
 def get_conversation_history(conversation_id: str):
     msgs_ref = db.collection('messages')
-    query = msgs_ref.where(filter=FieldFilter('conversation_id', '==', conversation_id)).order_by('timestamp')
-    return [doc.to_dict() for doc in query.stream()]
+    # Avoid Firestore composite index requirement by sorting in Python
+    docs = msgs_ref.where(filter=FieldFilter('conversation_id', '==', conversation_id)).stream()
+    messages = [doc.to_dict() for doc in docs]
+    return sorted(messages, key=lambda m: m.get('timestamp') or '')
 
 def search_messages(query_str: str):
     # Fetch all and filter (inefficient for prod without Algolia/Elasticsearch, but works for exam project)

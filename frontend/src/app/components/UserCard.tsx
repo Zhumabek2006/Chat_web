@@ -9,53 +9,75 @@ interface UserCardProps {
 }
 
 export function UserCard({ user, isActive, onClick, lastMessage }: UserCardProps) {
-  const getInitials = (username: string) => {
-    return username.slice(0, 2).toUpperCase();
-  };
-
+  const initials = user.username.slice(0, 2).toUpperCase();
   const isOnline = user.status === 'online';
 
   return (
-    <motion.div
+    <motion.button
+      id={`user-card-${user.id}`}
       onClick={onClick}
-      className={`relative p-3 rounded-xl cursor-pointer transition-all duration-300 ${
-        isActive
-          ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30'
-          : 'bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 hover:border-white/10'
-      }`}
-      whileHover={{ scale: 1.02, x: 4 }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, x: -20 }}
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-all duration-150"
+      style={{
+        background: isActive ? 'var(--sp-card)' : 'transparent',
+        cursor: 'pointer',
+        border: 'none',
+        fontFamily: 'var(--sp-font)',
+      }}
+      whileHover={{ background: isActive ? 'var(--sp-card)' : 'var(--sp-elevated)' }}
+      whileTap={{ scale: 0.99 }}
+      initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
     >
-      <div className="flex items-center space-x-3">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <span className="text-white font-medium">{getInitials(user.username)}</span>
-          </div>
-          {isOnline && (
-            <motion.div
-              className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#16213e]"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          )}
+      {/* Avatar */}
+      <div className="relative flex-shrink-0">
+        <div
+          className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold"
+          style={{
+            background: 'linear-gradient(135deg, #1ed760 0%, #1aa34a 100%)',
+            color: '#000',
+            boxShadow: 'var(--sp-shadow-card)',
+          }}
+        >
+          {initials}
         </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-white truncate">{user.username}</h4>
-          {lastMessage && (
-            <p className="text-xs text-gray-400 truncate">{lastMessage}</p>
-          )}
-        </div>
-        {isActive && (
+        {/* Online pulse dot */}
+        {isOnline && (
           <motion.div
-            className="w-2 h-2 rounded-full bg-indigo-500"
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
+            style={{
+              background: 'var(--sp-green)',
+              borderColor: 'var(--sp-base)',
+            }}
+            animate={{ scale: [1, 1.25, 1] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
       </div>
-    </motion.div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-bold truncate"
+          style={{ color: isActive ? 'var(--sp-green)' : 'var(--sp-text)' }}
+        >
+          {user.username}
+        </p>
+        {lastMessage && (
+          <p className="text-xs truncate" style={{ color: 'var(--sp-text-muted)' }}>
+            {isOnline ? 'Online' : lastMessage}
+          </p>
+        )}
+      </div>
+
+      {/* Active indicator bar */}
+      {isActive && (
+        <motion.div
+          className="w-1 h-6 rounded-full flex-shrink-0"
+          style={{ background: 'var(--sp-green)' }}
+          layoutId="active-bar"
+        />
+      )}
+    </motion.button>
   );
 }

@@ -10,59 +10,97 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, isSent, onEdit, onDelete }: MessageBubbleProps) {
-  const formatTime = (timestamp?: string) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (ts?: string) => {
+    if (!ts) return '';
+    return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <motion.div
-      className={`flex ${isSent ? 'justify-end' : 'justify-start'} mb-4 group`}
-      initial={{ opacity: 0, y: 20, scale: 0.8 }}
+      className={`flex ${isSent ? 'justify-end' : 'justify-start'} group`}
+      initial={{ opacity: 0, y: 10, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      exit={{ opacity: 0, scale: 0.94 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
     >
-      <div className={`flex flex-col ${isSent ? 'items-end' : 'items-start'} max-w-[70%]`}>
-        <div
-          className={`relative px-4 py-2.5 rounded-2xl ${
-            isSent
-              ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-br-sm'
-              : 'bg-white/10 backdrop-blur-md border border-white/10 text-gray-100 rounded-bl-sm'
-          } shadow-lg`}
-        >
-          <p className="text-sm break-words">{message.content}</p>
-          {message.edited && (
-            <span className="text-xs opacity-70 italic ml-2">(edited)</span>
-          )}
+      <div className={`flex flex-col ${isSent ? 'items-end' : 'items-start'} max-w-[68%]`}>
+        {/* Bubble */}
+        <div className="relative">
+          <div
+            className="px-4 py-2.5 text-sm leading-relaxed break-words"
+            style={
+              isSent
+                ? {
+                    background: 'var(--sp-green)',
+                    color: '#000',
+                    borderRadius: '18px 18px 4px 18px',
+                    fontFamily: 'var(--sp-font)',
+                    fontWeight: 400,
+                    boxShadow: 'var(--sp-shadow-card)',
+                  }
+                : {
+                    background: 'var(--sp-elevated)',
+                    color: 'var(--sp-text)',
+                    borderRadius: '18px 18px 18px 4px',
+                    fontFamily: 'var(--sp-font)',
+                    fontWeight: 400,
+                    boxShadow: 'var(--sp-shadow-card)',
+                  }
+            }
+          >
+            {message.content}
+            {message.edited && (
+              <span
+                className="text-xs ml-2 opacity-60 italic"
+                style={{ color: isSent ? '#000' : 'var(--sp-text-muted)' }}
+              >
+                edited
+              </span>
+            )}
+          </div>
 
+          {/* Hover action buttons — only on sent messages */}
           {isSent && (
-            <div className="absolute -left-20 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+            <div className="absolute -left-20 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex gap-1">
               {onEdit && (
                 <motion.button
                   onClick={() => onEdit(message)}
-                  className="p-1.5 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors"
-                  whileHover={{ scale: 1.1 }}
+                  className="p-1.5 rounded-full"
+                  style={{
+                    background: 'var(--sp-elevated)',
+                    border: '1px solid var(--sp-border)',
+                    color: 'var(--sp-text-muted)',
+                  }}
+                  whileHover={{ scale: 1.1, color: 'var(--sp-text)' }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Edit2 className="w-3.5 h-3.5 text-gray-300" />
+                  <Edit2 className="w-3 h-3" />
                 </motion.button>
               )}
               {onDelete && message.id && (
                 <motion.button
                   onClick={() => onDelete(message.id!)}
-                  className="p-1.5 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-red-500/20 transition-colors"
-                  whileHover={{ scale: 1.1 }}
+                  className="p-1.5 rounded-full"
+                  style={{
+                    background: 'var(--sp-elevated)',
+                    border: '1px solid var(--sp-border)',
+                    color: 'var(--sp-text-muted)',
+                  }}
+                  whileHover={{ scale: 1.1, color: 'var(--sp-error)' }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  <Trash2 className="w-3 h-3" />
                 </motion.button>
               )}
             </div>
           )}
         </div>
-        <span className="text-xs text-gray-500 mt-1 px-1">
+
+        {/* Timestamp */}
+        <span
+          className="text-xs mt-1.5 px-1 select-none"
+          style={{ color: 'var(--sp-text-dim)', fontFamily: 'var(--sp-font)' }}
+        >
           {formatTime(message.timestamp)}
         </span>
       </div>
