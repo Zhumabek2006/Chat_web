@@ -198,64 +198,13 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                   )}
                 </button>
               </motion.form>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all duration-300"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {isLogin && (
-                  <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center text-gray-400">
-                      <input type="checkbox" className="mr-2 rounded" />
-                      Remember me
-                    </label>
-                    <a href="#" className="text-indigo-400 hover:text-indigo-300">
-                      Forgot password?
-                    </a>
-                  </div>
-                )}
-
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  whileHover={{ scale: loading ? 1 : 1.02 }}
-                  whileTap={{ scale: loading ? 1 : 0.98 }}
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <motion.div
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      />
-                    </div>
-                  ) : isLogin ? (
-                    'Sign In'
-                  ) : (
-                    'Create Account'
-                  )}
-                </motion.button>
-              </motion.form>
             </AnimatePresence>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-400">
                 {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
                 <button
+                  type="button"
                   onClick={() => setIsLogin(!isLogin)}
                   className="text-indigo-400 hover:text-indigo-300 font-medium"
                 >
