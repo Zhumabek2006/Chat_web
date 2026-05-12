@@ -42,8 +42,8 @@ npm run dev
 Navigate to `http://localhost:5174` in your browser.
 
 ## Links
-- **Live Website:** [Insert Deployed Link Here]
-- **YouTube Demo Video:** [Insert YouTube Link Here]
+- **Live Website:** [https://chat-web-umber-omega.vercel.app](https://chat-web-umber-omega.vercel.app)
+- **YouTube Demo Video:**  https://youtu.be/__jRRNiqp3I
 
 ## Screenshots
 *(Add your screenshots here before submitting)*
