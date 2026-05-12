@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+firebase-admin
+pydantic
+python-dotenv
+websockets
+passlib
+bcrypt
