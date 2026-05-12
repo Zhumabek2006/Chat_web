@@ -6,11 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize Firebase Admin SDK
-# Ensure you have the firebase-service-account.json in the backend directory
-# or set the FIREBASE_PROJECT_ID if using default credentials in GCP
 try:
     if not firebase_admin._apps:
-        cred = credentials.Certificate('firebase-service-account.json')
+        # Check if running on Render (Render mounts secret files to /etc/secrets by default)
+        # or use local path
+        cert_path = '/etc/secrets/firebase-service-account.json' if os.path.exists('/etc/secrets/firebase-service-account.json') else 'firebase-service-account.json'
+        cred = credentials.Certificate(cert_path)
         firebase_admin.initialize_app(cred)
 except Exception as e:
     print(f"Warning: Could not initialize Firebase with certificate. {e}")

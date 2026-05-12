@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -113,7 +114,7 @@ export class WebSocketService {
     }
     this.intentionalClose = false;
     try {
-      this.ws = new WebSocket(`ws://localhost:8000/ws/chat/${userId}`);
+      this.ws = new WebSocket(`${WS_BASE_URL}/ws/chat/${userId}`);
       this.ws.onopen = () => console.log('WebSocket connected');
       this.ws.onmessage = (event) => {
         try {
