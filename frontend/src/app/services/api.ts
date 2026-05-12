@@ -49,6 +49,15 @@ export const userService = {
     const response = await api.get(`/users/search?q=${query}`);
     return response.data;
   },
+
+  uploadAvatar: async (userId: string, file: File): Promise<User> => {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await axios.patch(`${API_BASE_URL}/users/${userId}/avatar`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };
 
 export const messageService = {

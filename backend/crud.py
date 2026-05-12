@@ -69,7 +69,15 @@ def update_user_status(user_id: str, online: bool):
         "last_seen": datetime.now(timezone.utc)
     })
     user_dict = doc_ref.get().to_dict()
-    # Never expose the hashed password to the caller
+    return {k: v for k, v in user_dict.items() if k != "password"}
+
+def update_user_avatar(user_id: str, avatar_url: str):
+    doc_ref = db.collection('users').document(user_id)
+    doc = doc_ref.get()
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="User not found")
+    doc_ref.update({"avatar": avatar_url})
+    user_dict = doc_ref.get().to_dict()
     return {k: v for k, v in user_dict.items() if k != "password"}
 
 def create_message(msg: MessageCreate):

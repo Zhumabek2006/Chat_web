@@ -31,16 +31,25 @@ export function UserCard({ user, isActive, onClick, lastMessage }: UserCardProps
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div
-          className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold"
-          style={{
-            background: 'linear-gradient(135deg, #1ed760 0%, #1aa34a 100%)',
-            color: '#000',
-            boxShadow: 'var(--sp-shadow-card)',
-          }}
-        >
-          {initials}
-        </div>
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.username}
+            className="w-11 h-11 rounded-full object-cover"
+            style={{ boxShadow: 'var(--sp-shadow-card)' }}
+          />
+        ) : (
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold"
+            style={{
+              background: 'linear-gradient(135deg, #1ed760 0%, #1aa34a 100%)',
+              color: '#000',
+              boxShadow: 'var(--sp-shadow-card)',
+            }}
+          >
+            {initials}
+          </div>
+        )}
         {/* Online pulse dot */}
         {isOnline && (
           <motion.div

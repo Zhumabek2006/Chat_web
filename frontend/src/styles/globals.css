@@ -5,48 +5,48 @@
 /* ---------- CSS custom properties ---------- */
 :root {
   /* Backgrounds */
-  --sp-base:     #121212;
-  --sp-surface:  #181818;
+  --sp-base: #121212;
+  --sp-surface: #181818;
   --sp-elevated: #1f1f1f;
-  --sp-card:     #252525;
+  --sp-card: #252525;
 
   /* Text */
-  --sp-text:     #ffffff;
+  --sp-text: #ffffff;
   --sp-text-muted: #b3b3b3;
-  --sp-text-dim:   #6a6a6a;
+  --sp-text-dim: #6a6a6a;
 
   /* Accent */
-  --sp-green:    #1ed760;
+  --sp-green: #1ed760;
   --sp-green-dk: #1db954;
 
   /* Borders */
-  --sp-border:   #4d4d4d;
+  --sp-border: #4d4d4d;
   --sp-border-lt: #7c7c7c;
 
   /* Semantic */
-  --sp-error:    #f3727f;
-  --sp-warn:     #ffa42b;
-  --sp-info:     #539df5;
+  --sp-error: #f3727f;
+  --sp-warn: #ffa42b;
+  --sp-info: #539df5;
 
   /* Shadows */
-  --sp-shadow-heavy: rgba(0,0,0,0.5) 0px 8px 24px;
-  --sp-shadow-card:  rgba(0,0,0,0.3) 0px 8px 8px;
-  --sp-shadow-inset: rgb(18,18,18) 0px 1px 0px, rgb(124,124,124) 0px 0px 0px 1px inset;
+  --sp-shadow-heavy: rgba(0, 0, 0, 0.5) 0px 8px 24px;
+  --sp-shadow-card: rgba(0, 0, 0, 0.3) 0px 8px 8px;
+  --sp-shadow-inset: rgb(18, 18, 18) 0px 1px 0px, rgb(124, 124, 124) 0px 0px 0px 1px inset;
 
   /* Radius */
   --sp-r-badge: 2px;
-  --sp-r-sm:    4px;
-  --sp-r-std:   6px;
-  --sp-r-card:  8px;
-  --sp-r-pill:  500px;
-  --sp-r-full:  9999px;
+  --sp-r-sm: 4px;
+  --sp-r-std: 6px;
+  --sp-r-card: 8px;
+  --sp-r-pill: 500px;
+  --sp-r-full: 9999px;
   --sp-r-circle: 50%;
 
   /* Font (Circular-inspired stack) */
   --sp-font: SpotifyMixUI, CircularSp-Arab, CircularSp-Hebr, CircularSp-Cyrl,
-             CircularSp-Grek, CircularSp-Deva, "Helvetica Neue", Helvetica,
-             Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo,
-             "MS Gothic", sans-serif;
+    CircularSp-Grek, CircularSp-Deva, "Helvetica Neue", Helvetica,
+    Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo,
+    "MS Gothic", sans-serif;
 }
 
 /* ---------- Global reset + base ---------- */
@@ -56,7 +56,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   min-height: 100dvh;
   width: 100%;
@@ -73,7 +75,8 @@ html, body, #root {
 }
 
 /* Touch-action on scrollable lists for native feel */
-.overflow-y-auto, .overflow-x-auto {
+.overflow-y-auto,
+.overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
@@ -82,13 +85,16 @@ html, body, #root {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #4d4d4d;
   border-radius: var(--sp-r-full);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #7c7c7c;
 }
@@ -108,17 +114,42 @@ html, body, #root {
 /* ---------- Utility classes ---------- */
 
 /* Surfaces */
-.sp-base     { background: var(--sp-base); }
-.sp-surface  { background: var(--sp-surface); }
-.sp-elevated { background: var(--sp-elevated); }
-.sp-card     { background: var(--sp-card); }
+.sp-base {
+  background: var(--sp-base);
+}
+
+.sp-surface {
+  background: var(--sp-surface);
+}
+
+.sp-elevated {
+  background: var(--sp-elevated);
+}
+
+.sp-card {
+  background: var(--sp-card);
+}
 
 /* Text */
-.sp-text       { color: var(--sp-text); }
-.sp-text-muted { color: var(--sp-text-muted); }
-.sp-text-dim   { color: var(--sp-text-dim); }
-.sp-text-green { color: var(--sp-green); }
-.sp-text-error { color: var(--sp-error); }
+.sp-text {
+  color: var(--sp-text);
+}
+
+.sp-text-muted {
+  color: var(--sp-text-muted);
+}
+
+.sp-text-dim {
+  color: var(--sp-text-dim);
+}
+
+.sp-text-green {
+  color: var(--sp-green);
+}
+
+.sp-text-error {
+  color: var(--sp-error);
+}
 
 /* Buttons */
 .sp-btn {
@@ -136,8 +167,16 @@ html, body, #root {
   white-space: nowrap;
   user-select: none;
 }
-.sp-btn:active { transform: scale(0.98); }
-.sp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.sp-btn:active {
+  transform: scale(0.98);
+}
+
+.sp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .sp-btn-green {
   background: var(--sp-green);
@@ -146,6 +185,7 @@ html, body, #root {
   padding: 12px 32px;
   box-shadow: var(--sp-shadow-card);
 }
+
 .sp-btn-green:hover:not(:disabled) {
   background: #1fdf64;
   transform: scale(1.04);
@@ -158,7 +198,10 @@ html, body, #root {
   border-radius: var(--sp-r-full);
   padding: 8px 16px;
 }
-.sp-btn-dark:hover:not(:disabled) { background: #2a2a2a; }
+
+.sp-btn-dark:hover:not(:disabled) {
+  background: #2a2a2a;
+}
 
 .sp-btn-outline {
   background: transparent;
@@ -167,7 +210,10 @@ html, body, #root {
   border-radius: var(--sp-r-full);
   padding: 4px 16px;
 }
-.sp-btn-outline:hover:not(:disabled) { border-color: var(--sp-text); }
+
+.sp-btn-outline:hover:not(:disabled) {
+  border-color: var(--sp-text);
+}
 
 /* Inputs */
 .sp-input {
@@ -182,10 +228,14 @@ html, body, #root {
   box-shadow: var(--sp-shadow-inset);
   transition: box-shadow 200ms ease;
 }
-.sp-input::placeholder { color: var(--sp-text-muted); }
+
+.sp-input::placeholder {
+  color: var(--sp-text-muted);
+}
+
 .sp-input:focus {
   outline: none;
-  box-shadow: rgb(18,18,18) 0px 1px 0px, rgb(255,255,255) 0px 0px 0px 1px inset;
+  box-shadow: rgb(18, 18, 18) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 1px inset;
 }
 
 /* Cards */
@@ -195,7 +245,10 @@ html, body, #root {
   padding: 16px;
   transition: background 200ms ease;
 }
-.sp-card-block:hover { background: #222222; }
+
+.sp-card-block:hover {
+  background: #222222;
+}
 
 /* Separator */
 .sp-separator {
@@ -205,20 +258,41 @@ html, body, #root {
 
 /* Animations */
 @keyframes sp-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.85); }
-  50%       { opacity: 1;   transform: scale(1); }
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
+
 @keyframes sp-bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-4px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
+
 @keyframes sp-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sp-spinner {
-  width: 20px; height: 20px;
-  border: 2px solid rgba(255,255,255,0.2);
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-top-color: var(--sp-green);
   border-radius: 50%;
   animation: sp-spin 0.7s linear infinite;
@@ -234,12 +308,15 @@ html, body, #root {
   transition: background 150ms ease;
   z-index: 10;
 }
+
 .sp-resize-handle:hover,
 .sp-resize-handle.dragging {
   background: var(--sp-green);
 }
+
 .sp-resize-handle::after {
   content: '';
   position: absolute;
-  inset: 0 -4px;  /* widen the hit target */
+  inset: 0 -4px;
+  /* widen the hit target */
 }

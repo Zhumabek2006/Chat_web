@@ -45,6 +45,19 @@ def update_status(id: str, status: StatusUpdate):
     except Exception as e:
         raise HTTPException(status_code=404, detail="User not found")
 
+@app.patch("/users/{id}/avatar", response_model=UserResponse)
+async def update_avatar(id: str, file: UploadFile = File(...)):
+    """Upload a new profile picture. Returns updated user."""
+    allowed = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail="Unsupported image type")
+    data = await file.read()
+    if len(data) > 3 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Avatar too large (max 3 MB)")
+    b64 = base64.b64encode(data).decode()
+    data_url = f"data:{file.content_type};base64,{b64}"
+    return crud.update_user_avatar(id, data_url)
+
 # --- Image Upload ---
 
 @app.post("/upload-image")

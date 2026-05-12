@@ -119,12 +119,21 @@ export function Sidebar({
         {/* Current user row */}
         {currentUser && (
           <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-              style={{ background: 'var(--sp-green)', color: '#000' }}
-            >
-              {initials(currentUser.username)}
-            </div>
+            {currentUser.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.username}
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                style={{ border: '2px solid var(--sp-green)' }}
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                style={{ background: 'var(--sp-green)', color: '#000' }}
+              >
+                {initials(currentUser.username)}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold truncate" style={{ color: 'var(--sp-text)' }}>
                 {currentUser.username}
